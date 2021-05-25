@@ -1,0 +1,79 @@
+---
+title: "Project_200256498"
+author: "Katrina Witheford"
+date: "24/05/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#**Data Origins**
+The two datasets involved both come from the World Health Organisation(WHO) Open Repository. One dataset, Donor commitments (million constant, 2010 US dollars), contains information about 25 countries and the amount of money committed to health aid for other countries in US dollars. They define commitments as being “a firm written obligation by a government or official agency, backed by the appropriation or availability of the necessary funds, to provide resources of a specified amount under specified financial terms and conditions and for specified development purposes". The other dataset, Donor disbursements (million constant, 2010 US dollars), contains information regarding the same 25 countries as the Donor commitment dataset but contains the actual funds (or equivalent goods) given from donor to recipient in US dollars. Both datasets were collected by the Organisation for Economic Co-operation and Development. 
+
+Donor commitments (million constant, 2010 US dollars) reference 
+[https://www.who.int/data/gho/data/indicators/indicator-details/GHO/donor-commitments-(million-constant-2009-usd)]{https://www.who.int/data/gho/data/indicators/indicator-details/GHO/donor-commitments-(million-constant-2009-usd)} *accessed 15/04/21*
+  
+Donor disbursements (million constant, 2010 US dollars) reference
+[https://www.who.int/data/gho/data/indicators/indicator-details/GHO/donor-disbursements-(million-constant-2009-usd)]{https://www.who.int/data/gho/data/indicators/indicator-details/GHO/donor-disbursements-(million-constant-2009-usd)} *accessed 15/04/21*
+  
+#**Research Question**
+Many countries publicly pledge money to other nations in need which provides good publicity and greater international standing; however, it is unknown if this money is actually received by the other countries. This raises the question of whether the money committed by countries matches the money paid or disbursed? 
+
+#**Data preparation**
+```{r}
+#Loading of relevant libraries 
+library(tidyverse)
+library(here)
+
+#Set the working directory
+getwd()
+setwd("C:/Users/katie/OneDrive/Documents/Project_200256498")
+
+#Importing of the relevant datasets: Donor_commitments and Donor_disbursements
+library(readxl)
+ Donor_commitments <- read_excel("Data/Donor commitments.xlsx")
+ View(Donor_commitments)
+ library(readxl)
+ Donor_disbursements <- read_excel("Data/Donor disbursements.xlsx")
+ View(Donor_disbursements)
+ 
+#Merge Donor commitment and Donor disbursments data to get one dataset
+merged_data <- left_join(Donor_commitments, Donor_disbursements, by = "Country")
+
+#Removal of first blank row
+merged_data <- merged_data[-c(1),]
+
+#Renaming of variables for clarity
+colnames(merged_data)[2] <- "donor_committed" 
+colnames(merged_data)[3] <- "donor_paid"
+
+#First few rows of data after preparation 
+head(merged_data)
+```
+
+#**Visualisation** 
+```{r}
+#Plot parameters 
+plottitle <- "Money committed to aid compared to money disbursed"
+xlab <- "Money committed (US $)"
+ylab <- "Money disbursed (US $)"
+
+
+#Plotting the graph
+v <- ggplot(data = merged_data, mapping = aes_string(x = "donor_committed", y = "donor_paid"))
+                                                     
+v + geom_point(alpha = 0.5) +
+    ggtitle(plottitle) +
+    xlab(xlab) +
+    ylab(ylab) +
+    xlim(0,600) +
+    ylim(0,1250) +
+    geom_abline(aes(intercept=0, slope=1))
+```
+
+The graph shows the relationship between the money committed and the money paid by countries. The line provides reference for where the points would be if money committed was equal to money paid. 
+
+#**Summary**
+From the visualization, it is clear that there is a mismatch between the money committed by countries and the money actually disbursed to a degree, but that in most cases, the two are fairly similar. It can also be seen that at the higher end of money committed the mismatch becomes more severe than it is at the lower end of money committed. The next steps for this investigation would be into whether there are any patterns in the data such as are there countries that have a consistent mismatch between money pledged and money disbursed over time. In addition, I believe it would be interesting to look at if politics impacts this relationship e.g. does the mismatch become bigger on election years vs. non-election years?
